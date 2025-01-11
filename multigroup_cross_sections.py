@@ -20,6 +20,12 @@ class MultigroupPhotonCrossSections:
             'O':{'Z':8,'A':15.9994,'Conv':26.57,'Z/A':0.5000},\
             'Al':{'Z':13,'A':26.98154,'Conv':44.80,'Z/A':0.4818}
             }
+        self.compound_data = {
+            'Water':{'H':2.*self.element_data['H']['A']/\
+                     (2.*self.element_data['H']['A']+self.element_data['O']['A']),\
+                     'O':self.element_data['O']['A']/\
+                     (2.*self.element_data['H']['A']+self.element_data['O']['A'])}
+            }
         self.photoelectric_cross_sections_fitting_parameters = {
             'H':pd.DataFrame(
                 data=[[0.01,0.014,1.000E-08,0.,0.,0.],\
@@ -92,8 +98,6 @@ class MultigroupPhotonCrossSections:
         mass_scattering_coefficient = R*(Z/A)
         return mass_scattering_coefficient
     
-    
-        
 # return the mass attenuation coefficient of an element [cm^2 g^-1] 
 # element: chemical symbol of the element ['H','O']
 # E:       energy bin [keV]    
@@ -105,3 +109,16 @@ class MultigroupPhotonCrossSections:
         mass_attenuation_coefficient = \
             mass_absorption_coefficient+mass_scattering_coefficient
         return mass_attenuation_coefficient
+    
+# return the mass absorption coefficient of a compound [cm^2 g^-1] 
+# compound: weight fraction of each element in the compound
+# E:       energy bin [keV] 
+    def get_mass_absorption_coefficient_element(self,compound,E):
+        pass
+        
+        
+        
+        
+        
+        
+        
