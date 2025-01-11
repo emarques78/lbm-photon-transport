@@ -73,9 +73,26 @@ class MultigroupPhotonCrossSections:
         A = df['A'] # g mole^-1
         L = 0.40061 # cm^2 mole^-1
         X = E/511.04
-        R = L*(1+1.148*X+0.06141*X**2)/(1+3.171*X+0.9328*X**2+0.02572*X**3)
+        R = L*(1.+1.148*X+0.06141*X**2)/(1.+3.171*X+0.9328*X**2+0.02572*X**3)
         mass_scattering_coefficient = R*(Z/A)
         return mass_scattering_coefficient
+    
+# return the Klein-Nishina mass scattering coefficient of an element [cm^2 g^-1] 
+# element: chemical symbol of the element ['H','O']
+# E:       energy bin [keV]    
+    def get_KN_mass_scattering_coefficient_element(self,element,E):
+        df = self.element_data[element]
+        Z = df['Z']
+        A = df['A'] # g mole^-1
+        L = 0.40061 # cm^2 mole^-1
+        X = E/511.04
+        omega = 1./(1.+2*X)
+        R = (3/4)*L*(((2.+2.*X-X**2)/(2.*X**3))*np.log(omega)+\
+                     2.*omega*(1.+X)**2/X**2-omega**2*(1.+3*X))
+        mass_scattering_coefficient = R*(Z/A)
+        return mass_scattering_coefficient
+    
+    
         
 # return the mass attenuation coefficient of an element [cm^2 g^-1] 
 # element: chemical symbol of the element ['H','O']
