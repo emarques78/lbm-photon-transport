@@ -12,6 +12,11 @@ import pandas as pd
 class MultigroupPhotonCrossSections:
     
     def __init__(self):
+        self.electron_classical_radius_squared_barn = 0.07939827
+        self.electron_rest_mass_keV = 511.006
+        self.group_start = (150,125,100,75,50,25)
+        self.group_stop = (125,100,75,50,25,0)
+        self.group_step = (-1,-1,-1,-1,-1,-1)
 # Biggs F, Lighthill R. Analytical approximations for x-ray cross sections III. 
 # Sandia Natl. Lab., vol. SAND87, no. 70; 1988.        
         
@@ -20,12 +25,12 @@ class MultigroupPhotonCrossSections:
             'O':{'Z':8,'A':15.9994,'Conv':26.57,'Z/A':0.5000},\
             'Al':{'Z':13,'A':26.98154,'Conv':44.80,'Z/A':0.4818}
             }
-        self.compound_data = {
-            'Water':{'H':2.*self.element_data['H']['A']/\
-                     (2.*self.element_data['H']['A']+self.element_data['O']['A']),\
-                     'O':self.element_data['O']['A']/\
-                     (2.*self.element_data['H']['A']+self.element_data['O']['A'])}
-            }
+        #self.compound_data = {
+        #    'Water':{'H':2.*self.element_data['H']['A']/\
+        #             (2.*self.element_data['H']['A']+self.element_data['O']['A']),\
+        #             'O':self.element_data['O']['A']/\
+        #             (2.*self.element_data['H']['A']+self.element_data['O']['A'])}
+        #    }
         self.photoelectric_cross_sections_fitting_parameters = {
             'H':pd.DataFrame(
                 data=[[0.01,0.014,1.000E-08,0.,0.,0.],\
@@ -113,10 +118,40 @@ class MultigroupPhotonCrossSections:
 # return the mass absorption coefficient of a compound [cm^2 g^-1] 
 # compound: weight fraction of each element in the compound
 # E:       energy bin [keV] 
-    def get_mass_absorption_coefficient_element(self,compound,E):
+    def get_mass_absorption_coefficient_compound(self,compound,E):
         pass
         
         
+    def get_group_angle_transfer_matrix_element(self,group_in,group_out,direction_in,direction_out):        
+        chi_m = np.dot(direction_in,direction_out)
+        group_angle_transfer_matrix_element = 0.
+        group_in_start = self.group_start[group_in]
+        group_in_stop = self.group_stop[group_in]
+        group_in_step = self.group_step[group_in]
+        group_out_start = self.group_start[group_out]
+        group_out_stop = self.group_stop[group_out]
+        group_out_step = self.group_step[group_out]
+        integral_in = 0.
+        for E_in in np.arange(group_in_start,group_in_stop,group_in_step):
+            #print('E_in=',E_in)
+            lambda_in = self.electron_rest_mass_keV/E_in
+            integral_out = 0.
+            for E_out in np.arange(group_out_start,group_out_stop,group_out_step):
+                #print('E_out=',E_out)
+                E_max = E_in
+                E_min = E_in/(1.+2./lambda_in)
+                #print('E_max=',E_max)
+                #print('E_min=',E_min)
+                if((E_out<=E_max)&(E_out>=E_min)):
+                    print('E_in=',E_in,'E_out=',E_out,'E_max=',E_max,'E_min=',E_min)
+                    lambda_out = self.electron_rest_mass_keV/E_out
+                    chi = 1.+lambda_in-lambda_out
+                    print('chi=',chi)
+                    if(chi==chi_m):
+                        integral_out += E_in/E_out+E_out/E_in-1.+chi**2
+            integral_in += group_in_step/(E_in**2*(group_in_start-group_in_stop))*integral_out
+        group_angle_transfer_matrix_element = 0.5*self.electron_classical_radius_squared_barn*self.electron_rest_mass_keV*integral_in    
+        return group_angle_transfer_matrix_element
         
         
         
